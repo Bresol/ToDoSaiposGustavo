@@ -28,7 +28,7 @@
                 <span id="erroEmail" asp-validation-for="EmailResponsavel" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="button" id="btn-Salvar" value="Salvar" class="btn btn-primary" />
+                <input type="submit" id="btn-Salvar" value="Salvar" class="btn btn-primary" onclick="return ValidateForm();"/>
             </div>
         </form>
     </div>
@@ -77,7 +77,10 @@
     function ValidateEmail() {
         $("#erroEmail").html("");
         // set endpoint and your access key
-        var access_key = 'f20f7ae318c34b92ee6a685fac758feb';
+        //var access_key = 'f20f7ae318c34b92ee6a685fac758feb';
+        //Precisei trocar a chave pois estourei o limite de 250 chamadas free
+        //875bf62cc5510a4864078fe17a436f0e
+        var access_key = '875bf62cc5510a4864078fe17a436f0e';
         var email_address = $("#EmailResponsavel").val();
 
         if (email_address.length > 0) {
@@ -86,6 +89,7 @@
                 url: 'http://apilayer.net/api/check?access_key=' + access_key + '&email=' + email_address,
                 async: false,
                 dataType: 'jsonp',
+                crossDomain: true,
                 success: function (json) {
                     console.log("json.format_valid" + json.format_valid);
                     console.log("json.mx_found" + json.mx_found);
@@ -181,30 +185,42 @@
     function doneTypingEmail() {
         ValidateEmail();
     }
-    //-----------------------
 
-    $("#btn-Salvar").click(function (event) {
+    function ValidateForm() {
+        console.log("isValidateNome" + isValidateNome);
+        console.log("isValidateDescricao" + isValidateDescricao);
+        console.log("isValidateEmail" + isValidateEmail);
         if (isValidateEmail && isValidateNome && isValidateDescricao) {
-            $("#btn-Salvar").click(function (event) {
-                var url = $("#myForm").attr("action");
-                var formData = $("#myForm").serialize();
-                $.ajax({
-                    url: url,
-                    type: "POST",
-                    data: formData,
-                    dataType: "json",
-                    success: function (resp) {
-                        location.href = "/Tarefas";
-                    }
-                });
-                location.href = "/Tarefas";
-            });
+            return true;
         }
         else {
-            $("#erroEmail").html("E-mail não pode ser nulo.");
-            $("#erroDescricao").html("Descrição não pode ser nulo.");
-            $("#erroNomeResp").html("Nome Responsável não pode ser nulo.");
+            return false;
         }
-    });
+    }
+    //-----------------------
+
+    //$("#btn-Salvar").click(function (event) {
+    //    if (isValidateEmail && isValidateNome && isValidateDescricao) {
+    //        $("#btn-Salvar").click(function (event) {
+    //            var url = $("#myForm").attr("action");
+    //            var formData = $("#myForm").serialize();
+    //            $.ajax({
+    //                url: url,
+    //                type: "POST",
+    //                data: formData,
+    //                dataType: "json",
+    //                success: function (resp) {
+    //                    location.href = "/Tarefas";
+    //                }
+    //            });
+    //            location.href = "/Tarefas";
+    //        });
+    //    }
+    //    else {
+    //        $("#erroEmail").html("E-mail não pode ser nulo.");
+    //        $("#erroDescricao").html("Descrição não pode ser nulo.");
+    //        $("#erroNomeResp").html("Nome Responsável não pode ser nulo.");
+    //    }
+    //});
 
 </script>
