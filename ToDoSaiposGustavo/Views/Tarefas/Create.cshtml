@@ -10,7 +10,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form id="myForm" asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Descricao" class="control-label"></label>
@@ -28,7 +28,7 @@
                 <span id="erroEmail" asp-validation-for="EmailResponsavel" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Salvar" class="btn btn-primary" onclick="return ValidateForm();" />
+                <input type="button" id="btn-Salvar" value="Salvar" class="btn btn-primary" />
             </div>
         </form>
     </div>
@@ -42,18 +42,22 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
 
-<script type="text/javascript"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script>
+    var isValidateEmail = false;
+    var isValidateNome = false;
+    var isValidateDescricao = false;
+
     function ValidateNome() {
         $("#erroNomeResp").html("");
         var nome = $("#NomeResponsavel").val();
 
         if (nome.length > 0) {
-            return true;
+            isValidateNome = true;
         }
         else {
             $("#erroNomeResp").html("Nome Responsável não pode ser nulo.");
-            return false;
+            isValidateNome = false;
         }
     }
 
@@ -62,11 +66,11 @@
         var descricao = $("#Descricao").val();
 
         if (descricao.length > 0) {
-            return true;
+            isValidateDescricao = true;
         }
         else {
             $("#erroDescricao").html("Descrição não pode ser nulo.");
-            return false;
+            isValidateDescricao = false;
         }
     }
 
@@ -87,39 +91,121 @@
                     console.log("json.mx_found" + json.mx_found);
                     console.log("json.did_you_mean" + json.did_you_mean);
                     if (json.format_valid == true && json.mx_found == true) {
-                        return true;
+                        isValidateEmail = true;
                     }
                     else if (json.format_valid == false && json.did_you_mean.length > 0) {
                         $("#erroEmail").html("E-mail inválido. Tente: " + json.did_you_mean);
-                        return false;
+                        isValidateEmail = false;
                     }
                     else {
                         $("#erroEmail").html("E-mail inválido.");
-                        return false;
+                        isValidateEmail = false;
                     }
                 }
             });
         }
         else {
             $("#erroEmail").html("E-mail não pode ser nulo.");
-            return false;
+            isValidateEmail = false;
         }
     }
 
-    function ValidateForm() {
-        var isValidateEmail = ValidateEmail();
-        var isValidateNome = ValidateNome();
-        var isValidateDescricao = ValidateDescricao();
+    //-----------------------
+    var typingTimerNomeResp;
+    var doneTypingNomeRespIntervalNomeResp = 500;
+    var $inputNomeResp = $('#NomeResponsavel');
 
-        console.log("isValidateNome" + isValidateNome);
-        console.log("isValidateDescricao" + isValidateDescricao);
-        console.log("isValidateEmail" + isValidateEmail);
+    $inputNomeResp.on('keyup', function () {
+        clearTimeout(typingTimerNomeResp);
+        typingTimerNomeResp = setTimeout(doneTypingNomeResp, doneTypingNomeRespIntervalNomeResp);
+    });
 
-        if (isValidateEmail && isValidateNome && isValidateDescricao) {
-            return true;
+    $inputNomeResp.on('keydown', function (e) {
+        var keyCode = e.keyCode || e.which;
+        if (keyCode == 9) {
+            ValidateNome();
         }
         else {
-            return false;
+            clearTimeout(typingTimerNomeResp);
         }
+    });
+
+    function doneTypingNomeResp() {
+        ValidateNome();
     }
+    //-----------------------
+
+    var typingTimerDescricao;
+    var doneTypingDescricaoIntervalDescricao = 500;
+    var $inputDescricao = $('#Descricao');
+
+    $inputDescricao.on('keyup', function () {
+        clearTimeout(typingTimerDescricao);
+        typingTimerDescricao = setTimeout(doneTypingDescricao, doneTypingDescricaoIntervalDescricao);
+    });
+
+    $inputDescricao.on('keydown', function (e) {
+        var keyCode = e.keyCode || e.which;
+        if (keyCode == 9) {
+            ValidateDescricao();
+        }
+        else {
+            clearTimeout(typingTimerDescricao);
+        }
+    });
+
+    function doneTypingDescricao() {
+        ValidateDescricao();
+    }
+
+    //-----------------------
+    var typingTimerEmail;
+    var doneTypingEmailIntervalEmail = 100;
+    var $inputEmail = $('#EmailResponsavel');
+
+    $inputEmail.on('keyup', function () {
+        clearTimeout(typingTimerEmail);
+        typingTimerEmail = setTimeout(doneTypingEmail, doneTypingEmailIntervalEmail);
+    });
+
+    $inputEmail.on('keydown', function (e) {
+        var keyCode = e.keyCode || e.which;
+        if (keyCode == 9) {
+            ValidateEmail();
+        }
+        else {
+            clearTimeout(typingTimerEmail);
+        }
+    });
+
+    function doneTypingEmail() {
+        ValidateEmail();
+    }
+    //-----------------------
+
+    $("#btn-Salvar").click(function (event) {
+        if (isValidateEmail && isValidateNome && isValidateDescricao) {
+            $("#btn-Salvar").click(function (event) {
+                var url = $("#myForm").attr("action");
+                var formData = $("#myForm").serialize();
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: formData,
+                    dataType: "json",
+                    async:false,
+                    success: function (resp) {
+                        location.href = "http://google.com";
+                    }
+                });
+                location.href = "http://google.com";
+            });
+        }
+        else {
+            $("#erroEmail").html("E-mail não pode ser nulo.");
+            $("#erroDescricao").html("Descrição não pode ser nulo.");
+            $("#erroNomeResp").html("Nome Responsável não pode ser nulo.");
+        }
+    });
+
 </script>
