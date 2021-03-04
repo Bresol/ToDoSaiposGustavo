@@ -1,0 +1,125 @@
+﻿@model ToDoSaiposGustavo.Models.Tarefa
+
+@{
+    ViewData["Title"] = "Adicionar";
+}
+
+<h1>Adicionar</h1>
+
+<h4>Tarefa</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Descricao" class="control-label"></label>
+                <input asp-for="Descricao" class="form-control" />
+                <span id="erroDescricao" asp-validation-for="Descricao" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NomeResponsavel" class="control-label"></label>
+                <input asp-for="NomeResponsavel" class="form-control" />
+                <span id="erroNomeResp" asp-validation-for="NomeResponsavel" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EmailResponsavel" class="control-label"></label>
+                <input asp-for="EmailResponsavel" class="form-control" />
+                <span id="erroEmail" asp-validation-for="EmailResponsavel" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Salvar" class="btn btn-primary" onclick="return ValidateForm();" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Voltar a Lista de Tarefas</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<script type="text/javascript"></script>
+<script>
+    function ValidateNome() {
+        $("#erroNomeResp").html("");
+        var nome = $("#NomeResponsavel").val();
+
+        if (nome.length > 0) {
+            return true;
+        }
+        else {
+            $("#erroNomeResp").html("Nome Responsável não pode ser nulo.");
+            return false;
+        }
+    }
+
+    function ValidateDescricao() {
+        $("#erroDescricao").html("");
+        var descricao = $("#Descricao").val();
+
+        if (descricao.length > 0) {
+            return true;
+        }
+        else {
+            $("#erroDescricao").html("Descrição não pode ser nulo.");
+            return false;
+        }
+    }
+
+    function ValidateEmail() {
+        $("#erroEmail").html("");
+        // set endpoint and your access key
+        var access_key = 'f20f7ae318c34b92ee6a685fac758feb';
+        var email_address = $("#EmailResponsavel").val();
+
+        if (email_address.length > 0) {
+            // verify email address via AJAX call
+            $.ajax({
+                url: 'http://apilayer.net/api/check?access_key=' + access_key + '&email=' + email_address,
+                async: false,
+                dataType: 'jsonp',
+                success: function (json) {
+                    console.log("json.format_valid" + json.format_valid);
+                    console.log("json.mx_found" + json.mx_found);
+                    console.log("json.did_you_mean" + json.did_you_mean);
+                    if (json.format_valid == true && json.mx_found == true) {
+                        return true;
+                    }
+                    else if (json.format_valid == false && json.did_you_mean.length > 0) {
+                        $("#erroEmail").html("E-mail inválido. Tente: " + json.did_you_mean);
+                        return false;
+                    }
+                    else {
+                        $("#erroEmail").html("E-mail inválido.");
+                        return false;
+                    }
+                }
+            });
+        }
+        else {
+            $("#erroEmail").html("E-mail não pode ser nulo.");
+            return false;
+        }
+    }
+
+    function ValidateForm() {
+        var isValidateEmail = ValidateEmail();
+        var isValidateNome = ValidateNome();
+        var isValidateDescricao = ValidateDescricao();
+
+        console.log("isValidateNome" + isValidateNome);
+        console.log("isValidateDescricao" + isValidateDescricao);
+        console.log("isValidateEmail" + isValidateEmail);
+
+        if (isValidateEmail && isValidateNome && isValidateDescricao) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+</script>

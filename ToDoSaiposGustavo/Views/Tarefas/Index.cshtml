@@ -1,0 +1,131 @@
+﻿@model IEnumerable<ToDoSaiposGustavo.Models.Tarefa>
+
+@{
+    ViewData["Title"] = "Minhas Tarefas";
+}
+
+<h1>Pendentes</h1>
+
+<p>
+    <a asp-action="Create">Adicionar Tarefa</a>
+</p>
+<div class="form-group">
+    <input type="submit" value="Estou Sem Tarefas" class="btn btn-primary" onclick="return TarefasRandomDog();" />
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Descricao)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NomeResponsavel)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EmailResponsavel)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Where(t => t.Status == 0))
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Descricao)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.NomeResponsavel)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EmailResponsavel)
+                </td>
+                <td>
+                    <form asp-action="Concluir" asp-route-id="@item.ID">
+                        <input type="submit" value="Concluir" class="btn btn-primary" />
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h1>Concluidas</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Descricao)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NomeResponsavel)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EmailResponsavel)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Where(t => t.Status == 1))
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Descricao)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.NomeResponsavel)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EmailResponsavel)
+                </td>
+                <td>
+                    @if (item.QtdPendente < 2)
+                    {
+                        <form asp-action="Reativar" asp-route-id="@item.ID">
+                            <input type="submit" value="Reativar" class="btn btn-primary" onclick="return doAuthentication();"/>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script type="text/javascript"></script>
+<script>
+    function TarefasRandomDog() {
+        $.ajax({
+            url: 'https://cat-fact.herokuapp.com/facts/random?animal_type=dog&amount=3',
+            async: false,
+            success: function (json) {
+                console.log(json[0].text);
+                console.log(json[1].text);
+                console.log(json[2].text);
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Tarefas/EstouSemTarefas",
+                    data: { dogFact1: json[0].text, dogFact2: json[1].text, dogFact3: json[2].text },
+                    success: function () {
+                        location.reload();
+                    }
+                });
+            }
+        });
+    }
+
+
+    function doAuthentication() {
+        //TrabalheNaSaipos
+        var password = window.prompt("Informe a Senha", "")
+
+        if (password == "TrabalheNaSaipos") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+</script>
